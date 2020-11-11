@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/condour/ArduinoIDE/tools/**",
+                "/home/condour/ArduinoIDE/hardware/arduino/avr/**",
+                "${workspaceFolder}/**",
+                "/home/condour/Arduino/libraries/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu18",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-x64",
+            "forcedInclude": [
+                "/home/condour/ArduinoIDE/hardware/arduino/avr/cores/arduino/Arduino.h"
+            ]
+        }
+    ],
+    "version": 4
+}

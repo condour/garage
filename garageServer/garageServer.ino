@@ -4,14 +4,18 @@
 *********/
 
 // Load Wi-Fi library
-#include <ESP8266WiFi.h>
-
+#include "WiFiEsp.h"
+#include "Secrets.h"
+//#ifndef HAVE_HWSERIAL1
+//#include "SoftwareSerial.h"
+//SoftwareSerial Serial1(2, 3); // RX, TX
+//#endif
 // Replace with your network credentials
-const char* ssid     = "REPLACE_WITH_YOUR_SSID";
-const char* password = "REPLACE_WITH_YOUR_PASSWORD";
+const char* ssid     = SECRET_SSID;
+const char* password = SECRET_PASS;
 
 // Set web server port number to 80
-WiFiServer server(80);
+WiFiEspServer server(80);
 
 // Variable to store the HTTP request
 String header;
@@ -21,18 +25,21 @@ String output5State = "off";
 String output4State = "off";
 
 // Assign output variables to GPIO pins
-const int output5 = 5;
-const int output4 = 4;
+const int output5 = 11;
+const int output4 = 12;
 
 // Current time
 unsigned long currentTime = millis();
 // Previous time
 unsigned long previousTime = 0; 
 // Define timeout time in milliseconds (example: 2000ms = 2s)
-const long timeoutTime = 2000;
+const long timeoutTime = 5000;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
+  //Serial.println("Hello");
+  //Serial1.begin(9600);
+  //WiFi.init(&Serial1);
   // Initialize the output variables as outputs
   pinMode(output5, OUTPUT);
   pinMode(output4, OUTPUT);
@@ -57,7 +64,7 @@ void setup() {
 }
 
 void loop(){
-  WiFiClient client = server.available();   // Listen for incoming clients
+  WiFiEspClient client = server.available();   // Listen for incoming clients
 
   if (client) {                             // If a new client connects,
     Serial.println("New Client.");          // print a message out in the serial port
@@ -68,7 +75,7 @@ void loop(){
       currentTime = millis();         
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
+        //Serial.write(c);                    // print it out the serial monitor
         header += c;
         if (c == '\n') {                    // if the byte is a newline character
           // if the current line is blank, you got two newline characters in a row.
@@ -81,24 +88,24 @@ void loop(){
             client.println("Connection: close");
             client.println();
             
-            // turns the GPIOs on and off
-            if (header.indexOf("GET /5/on") >= 0) {
-              Serial.println("GPIO 5 on");
-              output5State = "on";
-              digitalWrite(output5, HIGH);
-            } else if (header.indexOf("GET /5/off") >= 0) {
-              Serial.println("GPIO 5 off");
-              output5State = "off";
-              digitalWrite(output5, LOW);
-            } else if (header.indexOf("GET /4/on") >= 0) {
-              Serial.println("GPIO 4 on");
-              output4State = "on";
-              digitalWrite(output4, HIGH);
-            } else if (header.indexOf("GET /4/off") >= 0) {
-              Serial.println("GPIO 4 off");
-              output4State = "off";
-              digitalWrite(output4, LOW);
-            }
+//            // turns the GPIOs on and off
+//            if (header.indexOf("GET /5/on") >= 0) {
+//              Serial.println("GPIO 5 on");
+//              output5State = "on";
+//              digitalWrite(output5, HIGH);
+//            } else if (header.indexOf("GET /5/off") >= 0) {
+//              Serial.println("GPIO 5 off");
+//              output5State = "off";
+//              digitalWrite(output5, LOW);
+//            } else if (header.indexOf("GET /4/on") >= 0) {
+//              Serial.println("GPIO 4 on");
+//              output4State = "on";
+//              digitalWrite(output4, HIGH);
+//            } else if (header.indexOf("GET /4/off") >= 0) {
+//              Serial.println("GPIO 4 off");
+//              output4State = "off";
+//              digitalWrite(output4, LOW);
+//            }
             
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
