@@ -11,10 +11,11 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ESP32Ping.h>
 #include "Credentials.h"
 // Replace with your network credentials
 const char* ssid = "condourama";
-
+const int PING_INTERVAL = 200;
 // Set web server port number to 80
 AsyncWebServer server(80);
 
@@ -41,6 +42,7 @@ long duration;
 int distance;
 int connectCount = 0;
 bool inProximity = false;
+int pingCount = 0;
 
 String current_status;
 
@@ -109,7 +111,21 @@ void setup() {
   digitalWrite(networkPin, HIGH);
 }
 
+bool networkIsOn() {
+  bool success = Ping.ping("192.168.1.1", 3);
+  Serial.println("pngSuccessful");
+  return success;
+}
+ 
 void loop() {
+  if(pingCount > 2000) {
+    pingCount = 0;
+    if(!networkIsOn()) {
+      Serial.println("NETWORK OFF");  
+      ESP.restart();
+    }
+  }
+  pingCount++;
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
