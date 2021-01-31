@@ -7,7 +7,7 @@
 */
 
 // Import required libraries
-#include <Arduino.h>
+
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -22,11 +22,16 @@ AsyncWebServer server(80);
 String header;
 
 // defines pins numbers
-const int trigPin = 4;
-const int echoPin = 2;
-const int redPin = 18;
+const int trigPin = 32;
+const int echoPin = 33
+;
+const int closedPin = 12;
+const int networkPin = 14;
+const int relayPin = 27;
+
 const int THRESHOLD = 40;
 const int SAMPLE_LENGTH = 20;
+
 int readings[SAMPLE_LENGTH];
 int readIndex = 0;
 int average = 0;
@@ -34,6 +39,7 @@ int total = 0;
 // defines variables
 long duration;
 int distance;
+int connectCount = 0;
 bool inProximity = false;
 
 String current_status;
@@ -52,7 +58,9 @@ String processor(const String& var) {
 void setup() {
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
-  pinMode(redPin, OUTPUT);
+  pinMode(closedPin, OUTPUT);
+  pinMode(relayPin, OUTPUT);
+  pinMode(networkPin, OUTPUT);
    Serial.println(WiFi.macAddress());
   Serial.begin(115200); // Starts the serial communication
   // initialize all the readings to 0:
@@ -65,9 +73,23 @@ void setup() {
   Serial.println(ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    digitalWrite(networkPin, HIGH);
+    delay(250);
+    connectCount++;
+    digitalWrite(networkPin, LOW);
+    delay(250);
+    Serial.println("not yet...");
     Serial.println(WiFi.status());
+    if(connectCount > 10) {
+      digitalWrite(networkPin, HIGH);
+      WiFi.begin(ssid, password);
+      connectCount = 0;
+      delay(500);
+      
+      digitalWrite(networkPin, LOW);
+    }
   }
+  digitalWrite(networkPin, HIGH);
   // Print local IP address and start web server
   Serial.println("");
   Serial.println("WiFi connected.");
@@ -79,8 +101,12 @@ void setup() {
   });
   server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request){
     Serial.println("TOGGLE");
+    digitalWrite(relayPin, HIGH);
+    delay(1000);
+    digitalWrite(relayPin, LOW);
     request->send(200, "application/json", "{ \"status\": \"ok\" }");
   });
+  digitalWrite(networkPin, HIGH);
 }
 
 void loop() {
@@ -97,7 +123,6 @@ void loop() {
 
   // Calculating the distance
   distance = duration * 0.034 / 2;
-
   total = total - readings[readIndex];
   readings[readIndex] = distance;
     total = total + readings[readIndex];
@@ -107,15 +132,15 @@ void loop() {
   }
   average = total/SAMPLE_LENGTH;
   // Serial.println(String(total) + " " + String(average) + " " + String(distance));
- 
+
   // Prints the distance on the Serial Monitor
   if (average < THRESHOLD) {
     current_status = "Open";
-    digitalWrite(redPin, HIGH);
+    digitalWrite(closedPin, HIGH);
   }
   if (average > THRESHOLD) {
     current_status = "Closed";
-    digitalWrite(redPin, LOW);
+    digitalWrite(closedPin, LOW);
   }
   delay(5);
 }
