@@ -6,9 +6,13 @@
                 "/home/condour/ArduinoIDE/tools/**",
                 "/home/condour/ArduinoIDE/hardware/arduino/avr/**",
                 "${workspaceFolder}/**",
-                "/home/condour/Arduino/libraries/**"
+                "/home/condour/Arduino/libraries/**",
+                "/home/condour/ArduinoIDE/hardware/tools/**",
+                "/home/condour/ArduinoIDE/libraries/**"
             ],
-            "defines": [],
+            "defines": [
+                "USBCON"
+            ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu18",
             "cppStandard": "gnu++14",
